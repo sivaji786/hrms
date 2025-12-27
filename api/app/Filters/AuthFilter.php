@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Filters;
+
+use CodeIgniter\Filters\FilterInterface;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+class AuthFilter implements FilterInterface
+{
+    public function before(RequestInterface $request, $arguments = null)
+    {
+        error_log('AuthFilter: Running');
+        $key = getenv('JWT_SECRET');
+        $header = $request->getHeaderLine('Authorization');
+        $token = null;
+
+        if (!empty($header)) {
+            if (preg_match('/Bearer\s(\S+)/', $header, $matches)) {
+                $token = $matches[1];
+            }
+        }
+
+        if (!$token) {
+            $this->logSecurityEvent('AUTH_MISSING_TOKEN', 'No token provided', ['ip' => $request->getIPAddress()]);
+            $response = service('response');
+            $response->setHeader('Access-Control-Allow-Origin', '*');
+            $response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization');
+            $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, PATCH');
+            $response->setJSON([
+                'status' => 'error',
+                'message' => 'Access denied. No token provided.'
+            ]);
+            $response->setStatusCode(401);
+            return $response;
+        }
+
+        try {
+            $decoded = JWT::decode($token, new Key($key, 'HS256'));
+
+            \App\Controllers\ApiController::$currentUser = (object) [
+                'id' => $decoded->sub,
+                'role' => $decoded->role
+            ];
+        } catch (\Exception $e) {
+            $this->logSecurityEvent('AUTH_INVALID_TOKEN', 'Invalid token: ' . $e->getMessage(), ['ip' => $request->getIPAddress()]);
+            error_log('AuthFilter: JWT Error: ' . $e->getMessage());
+            $response = service('response');
+            $response->setHeader('Access-Control-Allow-Origin', '*');
+            $response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization');
+            $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, PATCH');
+            $response->setJSON([
+                'status' => 'error',
+                'message' => 'Access denied. Invalid token.'
+            ]);
+            $response->setStatusCode(401);
+            return $response;
+        }
+    }
+
+    private function logSecurityEvent($type, $message, $context)
+    {
+        $logger = new \App\Libraries\SecurityLogger();
+        $logger->log($type, $message, $context);
+    }
+
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    {
+        // Do nothing here
+    }
+}

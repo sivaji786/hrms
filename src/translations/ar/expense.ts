@@ -1,0 +1,185 @@
+export default {
+  // Page titles
+  'expense.title': 'إدارة المصروفات والسفر',
+  'expense.subtitle': 'إدارة المصروفات وطلبات السفر',
+
+  // Stats
+  'expense.totalExpenses': 'إجمالي المصروفات',
+  'expense.totalTravel': 'إجمالي السفر',
+  'expense.pendingApprovals': 'الموافقات المعلقة',
+  'expense.pendingApproval': 'قيد الموافقة',
+  'expense.reimbursed': 'تم السداد',
+  'expense.travelRequests': 'طلبات السفر',
+  'expense.averageExpense': 'متوسط المصروفات',
+  'expense.approved': 'موافق عليها',
+  'expense.pending': 'معلق',
+  'expense.thisMonth': 'هذا الشهر',
+  'expense.thisYear': 'هذا العام',
+  'expense.fromLastMonth': 'من الشهر الماضي',
+  'expense.completed': 'مكتمل',
+  'expense.pendingStatus': '{{count}} قيد الانتظار',
+
+  // Tabs
+  'expense.expenses': 'المصروفات',
+  'expense.expenseClaims': 'مطالبات المصروفات',
+  'expense.travel': 'طلبات السفر',
+  'expense.travelRequestsTab': 'طلبات السفر',
+  'expense.analytics': 'التحليلات',
+
+  // Buttons
+  'expense.submitExpense': 'تقديم مصروف',
+  'expense.requestTravel': 'طلب سفر',
+  'expense.exportData': 'تصدير البيانات',
+  'expense.export': 'تصدير',
+  'expense.approveExpense': 'موافقة',
+  'expense.rejectExpense': 'رفض',
+  'expense.approveTravel': 'موافقة',
+  'expense.rejectTravel': 'رفض',
+  'expense.back': 'رجوع',
+  'expense.viewDetails': 'عرض التفاصيل',
+  'expense.view': 'عرض',
+  'expense.approve': 'موافقة',
+  'expense.reject': 'رفض',
+
+  // Expense Details
+  'expense.expenseDetails': 'تفاصيل المصروف',
+  'expense.amount': 'المبلغ',
+  'expense.category': 'الفئة',
+  'expense.description': 'الوصف',
+  'expense.date': 'التاريخ',
+  'expense.employee': 'الموظف',
+  'expense.employeeName': 'اسم الموظف',
+  'expense.employeeId': 'رقم الموظف',
+  'expense.status': 'الحالة',
+  'expense.receipt': 'الإيصال',
+  'expense.receipts': 'الإيصالات',
+  'expense.notes': 'ملاحظات',
+  'expense.submittedDate': 'تاريخ التقديم',
+  'expense.approvedDate': 'تاريخ الموافقة',
+  'expense.reimbursedDate': 'تاريخ الاسترداد',
+  'expense.actions': 'الإجراءات',
+  'expense.file': 'ملف(ات)',
+
+  // Travel Details
+  'expense.travelDetails': 'تفاصيل السفر',
+  'expense.from': 'من',
+  'expense.to': 'إلى',
+  'expense.departure': 'المغادرة',
+  'expense.return': 'العودة',
+  'expense.purpose': 'الغرض',
+  'expense.destination': 'الوجهة',
+  'expense.travelDate': 'تاريخ السفر',
+  'expense.estimatedCost': 'التكلفة المقدرة',
+  'expense.travelType': 'النوع',
+  'expense.accommodation': 'الإقامة',
+  'expense.transportation': 'النقل',
+
+  // Categories
+  'expense.food': 'طعام',
+  'expense.transport': 'مواصلات',
+  'expense.training': 'تدريب',
+  'expense.clientEntertainment': 'ترفيه العملاء',
+  'expense.officeSupplies': 'مستلزمات مكتبية',
+  'expense.other': 'أخرى',
+
+  // Status
+  'expense.pendingText': 'قيد الانتظار',
+  'expense.approvedText': 'تمت الموافقة',
+  'expense.reimbursedText': 'تم السداد',
+  'expense.rejected': 'مرفوض',
+
+  // Travel Types
+  'expense.domestic': 'محلي',
+  'expense.international': 'دولي',
+  'expense.flight': 'طيران',
+  'expense.train': 'قطار',
+  'expense.bus': 'حافلة',
+
+  // Travel Request Details (with travel. prefix)
+  'travel.requestDetails': 'تفاصيل طلب السفر',
+  'travel.requestId': 'رقم الطلب',
+  'travel.tripInfo': 'معلومات الرحلة',
+  'travel.purpose': 'الغرض',
+  'travel.from': 'من',
+  'travel.to': 'إلى',
+  'travel.departureDate': 'تاريخ المغادرة',
+  'travel.returnDate': 'تاريخ العودة',
+  'travel.travelType': 'نوع السفر',
+  'travel.duration': 'المدة',
+  'travel.days': 'أيام',
+  'travel.requirements': 'متطلبات السفر',
+  'travel.flightRequired': 'الرحلة الجوية مطلوبة',
+  'travel.class': 'الدرجة',
+  'travel.hotelRequired': 'الفندق مطلوب',
+  'travel.nights': 'ليالٍ',
+  'travel.advanceRequired': 'سلفة السفر مطلوبة',
+  'travel.estimatedCost': 'التكلفة المقدرة',
+
+  // Filters
+  'expense.searchExpenses': 'البحث عن مصروفات...',
+  'expense.searchTravelRequests': 'البحث عن طلبات السفر...',
+  'expense.searchTravel': 'البحث عن طلبات سفر...',
+  'expense.allStatus': 'جميع الحالات',
+  'expense.allCategories': 'جميع الفئات',
+  'expense.allTypes': 'جميع الأنواع',
+  'expense.filterBy': 'تصفية حسب',
+
+  // Table headers
+  'expense.employeeInfo': 'الموظف',
+  // 'expense.expenseInfo': 'معلومات المصروف', // Duplicate removed
+  'expense.travelInfo': 'معلومات السفر',
+  'expense.dates': 'التواريخ',
+
+  // Charts
+  'expense.expensesByCategory': 'المصروفات حسب الفئة',
+  'expense.monthlyExpenseTrend': 'اتجاه المصروفات الشهرية',
+  'expense.travelStatistics': 'إحصائيات السفر',
+  'expense.completedTrips': 'الرحلات المكتملة',
+  'expense.estimatedBudget': 'الميزانية المقدرة',
+  'expense.actualSpend': 'الإنفاق الفعلي',
+  'expense.savings': 'التوفير',
+
+  // Months
+  'expense.jan': 'يناير',
+  'expense.feb': 'فبراير',
+  'expense.mar': 'مارس',
+  'expense.apr': 'أبريل',
+  'expense.may': 'مايو',
+  'expense.jun': 'يونيو',
+  'expense.jul': 'يوليو',
+  'expense.aug': 'أغسطس',
+  'expense.sep': 'سبتمبر',
+  'expense.oct': 'أكتوبر',
+  'expense.nov': 'نوفمبر',
+  'expense.dec': 'ديسمبر',
+
+  // Detail Sheet
+  'expense.department': 'القسم',
+  'expense.submittedOn': 'تم التقديم في',
+  'expense.attachments': 'المرفقات',
+  'expense.claimDetails': 'تفاصيل مطالبة المصروف',
+  'expense.claimId': 'رقم المطالبة',
+  'expense.claimAmount': 'مبلغ المطالبة',
+  'expense.expenseInfo': 'معلومات المصروف',
+  'expense.projectCode': 'رمز المشروع',
+  'expense.files': 'ملف(ات)',
+  'expense.approvalInfo': 'معلومات الموافقة',
+  'expense.approver': 'المعتمد',
+  'expense.approvalDate': 'تاريخ الموافقة',
+  'expense.requestInfo': 'طلب مزيد من المعلومات',
+
+  // Empty states
+  'expense.noExpenses': 'لم يتم العثور على مصروفات',
+  'expense.noExpensesFound': 'لم يتم العثور على مطالبات مصروفات',
+  'expense.noTravel': 'لم يتم العثور على طلبات سفر',
+  'expense.noTravelRequestsFound': 'لم يتم العثور على طلبات سفر',
+  'expense.noResults': 'لا توجد نتائج',
+
+  // Messages
+  'expense.exportSuccess': 'بدأ التصدير',
+  'expense.exportDescription': 'سيتم تنزيل بيانات المصروفات والسفر كملف CSV.',
+  'expense.expenseApproved': 'تمت الموافقة على المصروف',
+  'expense.expenseRejected': 'تم رفض المصروف',
+  'expense.travelApproved': 'تمت الموافقة على طلب السفر',
+  'expense.travelRejected': 'تم رفض طلب السفر',
+};

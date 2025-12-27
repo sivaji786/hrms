@@ -1,0 +1,10 @@
+node_modules
+build
+dist
+.env
+.DS_Store
+api/vendor
+api/.env
+api/writable
+*.log
+tsc_errors*.txt
