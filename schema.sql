@@ -115,7 +115,8 @@ CREATE TABLE `employees` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
   FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`),
-  FOREIGN KEY (`manager_id`) REFERENCES `employees`(`id`)
+  FOREIGN KEY (`manager_id`) REFERENCES `employees`(`id`),
+  INDEX `idx_employees_status` (`status`)
 );
 
 -- ==========================================
@@ -272,7 +273,8 @@ CREATE TABLE `job_postings` (
   `posted_date` DATE,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`),
-  FOREIGN KEY (`location_id`) REFERENCES `locations`(`id`)
+  FOREIGN KEY (`location_id`) REFERENCES `locations`(`id`),
+  INDEX `idx_job_postings_status` (`status`)
 );
 
 CREATE TABLE `candidates` (
@@ -295,7 +297,8 @@ CREATE TABLE `applications` (
   `current_stage` VARCHAR(50),
   `rating` DECIMAL(3, 1),
   FOREIGN KEY (`job_id`) REFERENCES `job_postings`(`id`),
-  FOREIGN KEY (`candidate_id`) REFERENCES `candidates`(`id`)
+  FOREIGN KEY (`candidate_id`) REFERENCES `candidates`(`id`),
+  INDEX `idx_applications_status` (`status`)
 );
 
 CREATE TABLE `interviews` (
@@ -495,7 +498,8 @@ CREATE TABLE `tickets` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`requester_id`) REFERENCES `employees`(`id`),
-  FOREIGN KEY (`assignee_id`) REFERENCES `employees`(`id`)
+  FOREIGN KEY (`assignee_id`) REFERENCES `employees`(`id`),
+  INDEX `idx_tickets_status` (`status`)
 );
 
 CREATE TABLE `ticket_comments` (

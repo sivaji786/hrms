@@ -6,3 +6,4 @@ api/vendor
 api/writable
 *.log
 tsc_errors*.txt
+*.zip

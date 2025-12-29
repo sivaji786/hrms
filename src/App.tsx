@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import EmployeeLogin from './components/EmployeeLogin';
-import EmployeePortal from './components/EmployeePortal';
+import { useState, useEffect, Suspense, lazy } from 'react';
+const Login = lazy(() => import('./components/Login'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const EmployeeLogin = lazy(() => import('./components/EmployeeLogin'));
+const EmployeePortal = lazy(() => import('./components/EmployeePortal'));
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { Toaster } from './components/ui/sonner';
@@ -76,14 +76,38 @@ export default function App() {
         <div className="min-h-screen bg-gray-50">
           {!userType ? (
             showAdminLogin ? (
-              <Login onLogin={handleAdminLogin} onSwitchToEmployee={toggleLoginType} />
+              <Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }>
+                <Login onLogin={handleAdminLogin} onSwitchToEmployee={toggleLoginType} />
+              </Suspense>
             ) : (
-              <EmployeeLogin onLogin={handleEmployeeLogin} onBack={toggleLoginType} />
+              <Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }>
+                <EmployeeLogin onLogin={handleEmployeeLogin} onBack={toggleLoginType} />
+              </Suspense>
             )
           ) : userType === 'admin' ? (
-            <Dashboard onLogout={handleLogout} />
+            <Suspense fallback={
+              <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }>
+              <Dashboard onLogout={handleLogout} />
+            </Suspense>
           ) : (
-            <EmployeePortal onLogout={handleLogout} />
+            <Suspense fallback={
+              <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }>
+              <EmployeePortal onLogout={handleLogout} />
+            </Suspense>
           )}
         </div>
         <Toaster position="top-right" richColors />
