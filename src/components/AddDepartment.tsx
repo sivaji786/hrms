@@ -1,34 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ArrowLeft, Save, Building2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { organizationService, employeeService } from '../services/api'; // Import services
+import toast from '../utils/toast';
 
 interface AddDepartmentProps {
   onBack: () => void;
+  initialData?: any; // Add initialData prop
 }
 
-export default function AddDepartment({ onBack }: AddDepartmentProps) {
+export default function AddDepartment({ onBack, initialData }: AddDepartmentProps) {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
-    code: '',
     manager: '',
-    description: '',
     location: '',
-    budget: '',
-    headcount: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Pre-fill form if editing
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        manager: initialData.manager_id || '',
+        location: initialData.location_id || '',
+      });
+    }
+
+    // Fetch dependencies
+    const fetchDependencies = async () => {
+      try {
+        const [locs, emps] = await Promise.all([
+          organizationService.getLocations(),
+          employeeService.getAll(),
+        ]);
+        setLocations(locs.data || locs || []);
+        setEmployees(emps.data || emps || []);
+      } catch (error) {
+        console.error('Error fetching dependencies:', error);
+        toast.error('Failed to load form data');
+      }
+    };
+    fetchDependencies();
+  }, [initialData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    // Show success message and navigate back
-    onBack();
+    setLoading(true);
+
+    try {
+      const payload = {
+        name: formData.name,
+        manager_id: formData.manager,
+        location_id: formData.location,
+      };
+
+      if (initialData?.id) {
+        await organizationService.updateDepartment(initialData.id, payload);
+        toast.success(t('admin.departmentUpdated') || 'Department updated successfully');
+      } else {
+        await organizationService.createDepartment(payload);
+        toast.success(t('admin.departmentCreated') || 'Department created successfully');
+      }
+      onBack();
+    } catch (error: any) {
+      console.error('Error saving department:', error);
+      toast.error(error.response?.data?.message || 'Failed to save department');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -47,7 +95,9 @@ export default function AddDepartment({ onBack }: AddDepartmentProps) {
           {t('admin.departmentsTab')}
         </button>
         <span>/</span>
-        <span className="text-gray-900">{t('admin.addDepartment')}</span>
+        <span className="text-gray-900">
+          {initialData ? t('admin.editDepartment') || 'Edit Department' : t('admin.addDepartment')}
+        </span>
       </div>
 
       {/* Header */}
@@ -57,8 +107,12 @@ export default function AddDepartment({ onBack }: AddDepartmentProps) {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-2xl">{t('admin.addDepartment')}</h1>
-            <p className="text-sm text-gray-600">{t('admin.addDepartmentDesc')}</p>
+            <h1 className="text-2xl">
+              {initialData ? t('admin.editDepartment') || 'Edit Department' : t('admin.addDepartment')}
+            </h1>
+            <p className="text-sm text-gray-600">
+              {initialData ? 'Update department details' : t('admin.addDepartmentDesc')}
+            </p>
           </div>
         </div>
       </div>
@@ -90,19 +144,6 @@ export default function AddDepartment({ onBack }: AddDepartmentProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="code">
-                    {t('admin.departmentCode')} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="code"
-                    value={formData.code}
-                    onChange={(e) => handleChange('code', e.target.value)}
-                    placeholder={t('admin.enterDepartmentCode')}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="manager">
                     {t('admin.departmentManager')} <span className="text-red-500">*</span>
                   </Label>
@@ -111,78 +152,44 @@ export default function AddDepartment({ onBack }: AddDepartmentProps) {
                       <SelectValue placeholder={t('admin.selectManager')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="john">John Doe</SelectItem>
-                      <SelectItem value="jane">Jane Smith</SelectItem>
-                      <SelectItem value="mike">Mike Johnson</SelectItem>
-                      <SelectItem value="sarah">Sarah Williams</SelectItem>
-                      <SelectItem value="rahul">Rahul Sharma</SelectItem>
-                      <SelectItem value="priya">Priya Patel</SelectItem>
+                      {employees.map((emp) => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.first_name} {emp.last_name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="location">
-                    {t('admin.location')}
+                    {t('admin.location')} <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => handleChange('location', e.target.value)}
-                    placeholder={t('admin.enterLocation')}
-                  />
+                  <Select value={formData.location} onValueChange={(value) => handleChange('location', value)}>
+                    <SelectTrigger id="location">
+                      <SelectValue placeholder={t('admin.selectLocation') || 'Select Location'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((loc) => (
+                        <SelectItem key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="budget">
-                    {t('admin.departmentBudget')}
-                  </Label>
-                  <Input
-                    id="budget"
-                    type="number"
-                    value={formData.budget}
-                    onChange={(e) => handleChange('budget', e.target.value)}
-                    placeholder={t('admin.enterBudget')}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="headcount">
-                    {t('admin.targetHeadcount')}
-                  </Label>
-                  <Input
-                    id="headcount"
-                    type="number"
-                    value={formData.headcount}
-                    onChange={(e) => handleChange('headcount', e.target.value)}
-                    placeholder={t('admin.enterHeadcount')}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">
-                  {t('admin.description')}
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder={t('admin.enterDescription')}
-                  rows={4}
-                />
               </div>
             </CardContent>
           </Card>
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={onBack}>
+            <Button type="button" variant="outline" onClick={onBack} disabled={loading}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600">
+            <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600" disabled={loading}>
               <Save className="w-4 h-4 mr-2" />
-              {t('admin.saveDepartment')}
+              {loading ? (initialData ? 'Updating...' : 'Saving...') : (initialData ? t('admin.update') || 'Update' : t('admin.saveDepartment'))}
             </Button>
           </div>
         </div>

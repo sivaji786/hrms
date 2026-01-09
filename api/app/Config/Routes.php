@@ -22,7 +22,6 @@ $routes->group('api/v1', ['filter' => 'cors'], function ($routes) {
     // Public Auth Routes
     $routes->post('auth/login', 'AuthController::login');
     $routes->post('auth/register', 'AuthController::register');
-    $routes->post('auth/register', 'AuthController::register');
     
     // Protected Routes
     $routes->group('', ['filter' => 'auth'], function($routes) {

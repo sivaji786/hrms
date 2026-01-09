@@ -47,9 +47,8 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    // Clear localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Clear all localStorage data
+    localStorage.clear();
     setUserType(null);
     setShowAdminLogin(true); // Always return to admin login page after logout
   };

@@ -3,7 +3,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Building2, User, Lock, Loader2 } from 'lucide-react';
+import { User, Lock, Loader2 } from 'lucide-react';
+import logoLogin from '../logo_login.png';
 import { useLanguage } from '../contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 import { authService } from '../services/api';
@@ -46,6 +47,7 @@ export default function EmployeeLogin({ onLogin, onBack }: EmployeeLoginProps) {
 
     setIsLoading(true);
     try {
+      localStorage.clear(); // Clear all previous authentication data
       const response = await authService.login({ email, password });
 
       // Ensure the user object has a role field, default to 'employee'
@@ -75,8 +77,8 @@ export default function EmployeeLogin({ onLogin, onBack }: EmployeeLoginProps) {
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="space-y-3 pb-6">
           <div className="flex justify-center mb-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Building2 className="w-10 h-10 text-white" />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+              <img src={logoLogin} alt="HR System Logo" className="w-full h-full object-contain" />
             </div>
           </div>
           <CardTitle className="text-center text-2xl">

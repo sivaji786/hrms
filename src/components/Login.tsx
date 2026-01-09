@@ -1,9 +1,10 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Building2, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import logoLogin from '../logo_login.png';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authService } from '../services/api';
 import toast from '../utils/toast';
@@ -31,6 +32,10 @@ export default function Login({ onLogin, onSwitchToEmployee }: LoginProps) {
         password: 'admin123'
       });
 
+      // Clear all previous authentication data
+      localStorage.clear();
+
+      // Set new authentication data
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Login successful');
@@ -48,6 +53,10 @@ export default function Login({ onLogin, onSwitchToEmployee }: LoginProps) {
     setIsLoading(true);
     try {
       const response = await authService.login({ email, password });
+      // Clear all previous authentication data
+      localStorage.clear();
+
+      // Set new authentication data
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       toast.success('Login successful');
@@ -64,8 +73,8 @@ export default function Login({ onLogin, onSwitchToEmployee }: LoginProps) {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-            <Building2 className="w-8 h-8 text-white" />
+          <div className="mx-auto w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden">
+            <img src={logoLogin} alt="HR System Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <CardTitle className="text-2xl">{t('auth.title')}</CardTitle>

@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   Menu,
   LogOut,
-  Building2,
   Ticket,
   DollarSign,
   TrendingUp,
@@ -21,6 +20,7 @@ import {
   Package,
   Plane,
 } from 'lucide-react';
+import hrmsLogo from '../hrms_logo.png';
 import DashboardHome from './DashboardHome';
 import EmployeeManagement from './EmployeeManagement';
 import LeaveManagement from './LeaveManagement';
@@ -167,8 +167,8 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     <div className="h-full flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-            <Building2 className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+            <img src={hrmsLogo} alt="HRMS Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h2 className="font-semibold">{t('common.hrSystem')}</h2>

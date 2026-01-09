@@ -213,6 +213,76 @@ class PayrollController extends ApiController
         
         return $this->respondError('Failed to create payroll record', 500, $this->payrollModel->errors());
     }
+    // Admin: Generate Payroll for a specific month
+    public function generate()
+    {
+        $user = $this->getUser();
+        if ($user->role !== 'admin') {
+            return $this->respondError('Unauthorized', 403);
+        }
+
+        $json = $this->request->getJSON();
+        $month = $json->month ?? date('n');
+        $year = $json->year ?? date('Y');
+
+        $employeeModel = new \App\Models\EmployeeModel();
+        $salaryStructureModel = new \App\Models\SalaryStructureModel();
+        
+        // Fetch eligible active employees with their salary structure
+        $employees = $employeeModel->select('employees.id, employees.first_name, employees.last_name, salary_structures.basic_salary, salary_structures.housing_allowance, salary_structures.transport_allowance, salary_structures.other_allowances')
+            ->join('salary_structures', 'employees.id = salary_structures.employee_id')
+            ->where('employees.status', 'Active')
+            ->findAll();
+            
+        $generatedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($employees as $emp) {
+            // Check if record already exists
+            $exists = $this->payrollModel->where('employee_id', $emp['id'])
+                ->where('month', $month)
+                ->where('year', $year)
+                ->first();
+
+            if ($exists) {
+                $skippedCount++;
+                continue;
+            }
+
+            // Calculate components
+            $basic = (float)$emp['basic_salary'];
+            $housing = (float)$emp['housing_allowance'] ?? 0;
+            $transport = (float)$emp['transport_allowance'] ?? 0;
+            $other = (float)$emp['other_allowances'] ?? 0;
+            
+            $totalAllowances = $housing + $transport + $other;
+            $totalDeductions = 0; // Initial draft has 0 deductions typically
+            $netSalary = $basic + $totalAllowances - $totalDeductions;
+
+            $data = [
+                'employee_id' => $emp['id'],
+                'month' => $month,
+                'year' => $year,
+                'basic_salary' => $basic,
+                'total_allowances' => $totalAllowances,
+                'total_deductions' => $totalDeductions,
+                'net_salary' => $netSalary,
+                'status' => 'Draft',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            if ($this->payrollModel->insert($data)) {
+                $generatedCount++;
+            }
+        }
+
+        return $this->respondSuccess([
+            'generated' => $generatedCount,
+            'skipped' => $skippedCount,
+            'message' => "Payroll generation complete. Generated: $generatedCount, Skipped: $skippedCount"
+        ]);
+    }
+
     // Admin: View specific employee payroll details
     public function getEmployeePayroll($employeeId)
     {

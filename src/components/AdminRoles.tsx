@@ -23,6 +23,7 @@ export default function AdminRoles({ onBack }: AdminRolesProps) {
   const [activeTab, setActiveTab] = useState<string>('roles');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDepartment, setShowAddDepartment] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<any>(null);
 
   // State for API data
   const [roles, setRoles] = useState<any[]>([]);
@@ -83,8 +84,22 @@ export default function AdminRoles({ onBack }: AdminRolesProps) {
     }
   };
 
+  const handleEditDepartment = (dept: any) => {
+    setEditingDepartment(dept);
+    setShowAddDepartment(true);
+  };
+
   if (showAddDepartment) {
-    return <AddDepartment onBack={() => { setShowAddDepartment(false); fetchAllData(); }} />;
+    return (
+      <AddDepartment
+        onBack={() => {
+          setShowAddDepartment(false);
+          setEditingDepartment(null);
+          fetchAllData();
+        }}
+        initialData={editingDepartment}
+      />
+    );
   }
 
   // Filter users based on search term
@@ -310,7 +325,7 @@ export default function AdminRoles({ onBack }: AdminRolesProps) {
         <TabsContent value="departments" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg">{t('admin.departmentManagement')}</h3>
-            <Button onClick={() => setShowAddDepartment(true)}>
+            <Button onClick={() => { setEditingDepartment(null); setShowAddDepartment(true); }}>
               <Plus className="w-4 h-4 mr-2" />
               {t('admin.addDepartment')}
             </Button>
@@ -325,7 +340,7 @@ export default function AdminRoles({ onBack }: AdminRolesProps) {
                       <Building2 className="w-5 h-5" />
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" onClick={() => handleEditDepartment(dept)}>
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button

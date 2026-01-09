@@ -35,9 +35,10 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Clear token and redirect to login if needed
-            // localStorage.removeItem('token');
-            // window.location.href = '/login';
+            // Clear token and redirect to login
+            console.error('Authentication failed - clearing token and redirecting to login');
+            localStorage.clear();
+            window.location.href = '/';
         }
         return Promise.reject(error);
     }

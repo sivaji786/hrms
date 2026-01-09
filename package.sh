@@ -76,7 +76,7 @@ cd ..
 #   I will add that exclusion.
 #   I will API/writable handling.
 
-zip -r app.zip api -x "api/writable/*" "api/vendor/*" "api/.git/*" "api/.env" "api/public/.htaccess"
+zip -r app.zip api -x "api/writable/*" "api/.git/*" "api/.env" "api/public/.htaccess"
 
 # Create empty writable structure and add to zip
 echo "Adding empty writable directories..."
