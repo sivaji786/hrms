@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { employees } from '../data/employeeData';
 import toast from '../utils/toast';
 
-type ViewMode = 'list' | 'add' | 'view';
+type ViewMode = 'list' | 'add' | 'view' | 'edit';
 
 // Use Policy interface from service
 
@@ -26,7 +26,7 @@ export default function DocumentsPolicy() {
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await policyService.getAll();
@@ -37,11 +37,11 @@ export default function DocumentsPolicy() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleViewPolicy = (policy: Policy) => {
     setSelectedPolicy(policy);
