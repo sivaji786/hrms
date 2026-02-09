@@ -176,6 +176,27 @@ export const payrollService = {
         const response = await api.get('/payroll/pending-settlements');
         return response.data.data || response.data;
     },
+    // Gratuity endpoints
+    getEmployeeGratuity: async (employeeId: string) => {
+        const response = await api.get(`/payroll/employee/${employeeId}/gratuity`);
+        return response.data.data || response.data;
+    },
+    getEmployeeGratuityHistory: async (employeeId: string, limit: number = 12) => {
+        const response = await api.get(`/payroll/employee/${employeeId}/gratuity/history`, { params: { limit } });
+        return response.data.data || response.data;
+    },
+    calculateGratuity: async (data: any) => {
+        const response = await api.post('/payroll/gratuity/calculate', data);
+        return response.data.data || response.data;
+    },
+    settleGratuity: async (data: any) => {
+        const response = await api.post('/payroll/gratuity/settle', data);
+        return response.data.data || response.data;
+    },
+    batchCalculateGratuity: async (data: any) => {
+        const response = await api.post('/payroll/gratuity/batch-calculate', data);
+        return response.data.data || response.data;
+    },
 };
 
 export const recruitmentService = {
@@ -606,7 +627,11 @@ export const travelService = {
 export const dashboardService = {
     getStats: async (location?: string) => {
         const response = await api.get('/dashboard/stats', { params: { location } });
-        return response.data;
+        return response.data.data || response.data;
+    },
+    getEmployeeStats: async () => {
+        const response = await api.get('/dashboard/employee-stats');
+        return response.data.data || response.data;
     },
 };
 

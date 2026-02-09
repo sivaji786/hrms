@@ -51,12 +51,12 @@ export default function EmployeeLogin({ onLogin, onBack }: EmployeeLoginProps) {
       const response = await authService.login({ email, password });
 
       // Ensure the user object has a role field, default to 'employee'
-      const userData = response.data.user;
+      const userData = response.user;
       if (!userData.role) {
         userData.role = 'employee';
       }
 
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(userData));
       toast.success('Login successful');
       onLogin();

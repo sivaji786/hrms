@@ -457,4 +457,135 @@ class PayrollController extends ApiController
             ]
         ]);
     }
+    
+    // ==================== GRATUITY ENDPOINTS ====================
+    
+    /**
+     * Get employee gratuity details
+     * GET /api/v1/payroll/employee/{id}/gratuity
+     */
+    public function getEmployeeGratuity($employeeId)
+    {
+        try {
+            $gratuityService = new \App\Services\GratuityService();
+            
+            // Get current gratuity
+            $gratuity = $gratuityService->getEmployeeGratuity($employeeId);
+            
+            if (!$gratuity) {
+                // Calculate and store if not exists
+                $result = $gratuityService->calculateAndStoreGratuity($employeeId, 'initial');
+                $gratuity = $result['data'];
+            }
+            
+            return $this->respondSuccess($gratuity);
+            
+        } catch (\Exception $e) {
+            return $this->respondError($e->getMessage(), 500);
+        }
+    }
+    
+    /**
+     * Get employee gratuity history
+     * GET /api/v1/payroll/employee/{id}/gratuity/history
+     */
+    public function getEmployeeGratuityHistory($employeeId)
+    {
+        try {
+            $gratuityService = new \App\Services\GratuityService();
+            
+            $limit = $this->request->getGet('limit') ?? 12;
+            $history = $gratuityService->getGratuityHistory($employeeId, (int)$limit);
+            
+            return $this->respondSuccess($history);
+            
+        } catch (\Exception $e) {
+            return $this->respondError($e->getMessage(), 500);
+        }
+    }
+    
+    /**
+     * Calculate and update gratuity for an employee
+     * POST /api/v1/payroll/gratuity/calculate
+     */
+    public function calculateGratuity()
+    {
+        try {
+            $user = $this->getUser();
+            $data = $this->request->getJSON(true);
+            
+            if (!isset($data['employee_id'])) {
+                return $this->respondError('Employee ID is required', 400);
+            }
+            
+            $gratuityService = new \App\Services\GratuityService();
+            
+            $result = $gratuityService->calculateAndStoreGratuity(
+                $data['employee_id'],
+                $data['calculation_type'] ?? 'manual',
+                $user->id,
+                $data['notes'] ?? null
+            );
+            
+            return $this->respondSuccess($result['data'], 'Gratuity calculated successfully');
+            
+        } catch (\Exception $e) {
+            return $this->respondError($e->getMessage(), 500);
+        }
+    }
+    
+    /**
+     * Record gratuity settlement for offboarding
+     * POST /api/v1/payroll/gratuity/settle
+     */
+    public function settleGratuity()
+    {
+        try {
+            $user = $this->getUser();
+            $data = $this->request->getJSON(true);
+            
+            if (!isset($data['employee_id']) || !isset($data['settlement_date'])) {
+                return $this->respondError('Employee ID and settlement date are required', 400);
+            }
+            
+            $gratuityService = new \App\Services\GratuityService();
+            
+            $result = $gratuityService->recordGratuitySettlement(
+                $data['employee_id'],
+                $data['settlement_date'],
+                $user->id,
+                $data['notes'] ?? null
+            );
+            
+            return $this->respondSuccess($result['data'], 'Gratuity settlement recorded successfully');
+            
+        } catch (\Exception $e) {
+            return $this->respondError($e->getMessage(), 500);
+        }
+    }
+    
+    /**
+     * Batch calculate gratuity for all employees
+     * POST /api/v1/payroll/gratuity/batch-calculate
+     */
+    public function batchCalculateGratuity()
+    {
+        try {
+            $user = $this->getUser();
+            $data = $this->request->getJSON(true);
+            
+            $gratuityService = new \App\Services\GratuityService();
+            
+            $results = $gratuityService->calculateAllEmployeesGratuity(
+                $data['calculation_type'] ?? 'monthly',
+                $user->id
+            );
+            
+            return $this->respondSuccess($results, 'Batch calculation completed');
+            
+        } catch (\Exception $e) {
+            return $this->respondError($e->getMessage(), 500);
+        }
+    }
 }
+

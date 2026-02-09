@@ -68,10 +68,32 @@ export default function HolidayManagement() {
     optional: holidays.filter(h => h.type === 'Optional Holiday').length,
   };
 
+  const getTranslatedType = (type: string) => {
+    switch (type) {
+      case 'National Holiday': return t('leave.nationalHoliday');
+      case 'Regional Holiday': return t('leave.regionalHoliday');
+      case 'Optional Holiday': return t('leave.optionalHoliday');
+      default: return type;
+    }
+  };
+
+  const getTranslatedLocation = (location: string) => {
+    switch (location) {
+      case 'All Locations': return t('leave.allLocations');
+      case 'Dubai': return t('leave.dubai');
+      case 'Abu Dhabi': return t('leave.abuDhabi');
+      case 'Sharjah': return t('leave.sharjah');
+      case 'Ajman': return t('leave.ajman');
+      case 'Ras Al Khaimah': return t('leave.rasAlKhaimah');
+      case 'Fujairah': return t('leave.fujairah');
+      default: return location;
+    }
+  };
+
   const holidayTypeData = [
-    { name: 'National', value: holidayStats.national, color: '#3b82f6' },
-    { name: 'Regional', value: holidayStats.regional, color: '#8b5cf6' },
-    { name: 'Optional', value: holidayStats.optional, color: '#f97316' },
+    { name: t('leave.nationalHoliday'), value: holidayStats.national, color: '#3b82f6' },
+    { name: t('leave.regionalHoliday'), value: holidayStats.regional, color: '#8b5cf6' },
+    { name: t('leave.optionalHoliday'), value: holidayStats.optional, color: '#f97316' },
   ];
 
   const monthlyHolidayCount = Array.from({ length: 12 }, (_, i) => {
@@ -420,7 +442,7 @@ export default function HolidayManagement() {
                     <SelectItem value="all">{t('leave.allLocations')}</SelectItem>
                     {LOCATIONS.map((loc) => (
                       <SelectItem key={loc} value={loc}>
-                        {loc}
+                        {getTranslatedLocation(loc)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -454,7 +476,7 @@ export default function HolidayManagement() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-blue-900 flex items-center gap-2">
                     <Plus className="w-6 h-6" />
-                    Add New Holiday
+                    {t('leave.addNewHoliday')}
                   </CardTitle>
                   <Button
                     variant="outline"
@@ -478,7 +500,7 @@ export default function HolidayManagement() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Holiday Name *</Label>
+                    <Label>{t('leave.holidayName')} *</Label>
                     <Input
                       id="add-holiday-name"
                       name="name"
@@ -488,7 +510,7 @@ export default function HolidayManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Date *</Label>
+                    <Label>{t('leave.date')} *</Label>
                     <Input
                       id="add-holiday-date"
                       name="date"
@@ -498,7 +520,7 @@ export default function HolidayManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Holiday Type *</Label>
+                    <Label>{t('leave.holidayType')} *</Label>
                     <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select type" />
@@ -513,7 +535,7 @@ export default function HolidayManagement() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Location *</Label>
+                    <Label>{t('leave.location')} *</Label>
                     <Select value={formData.location} onValueChange={(value) => setFormData({ ...formData, location: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select location" />
@@ -521,14 +543,14 @@ export default function HolidayManagement() {
                       <SelectContent>
                         {LOCATIONS.map((loc) => (
                           <SelectItem key={loc} value={loc}>
-                            {loc}
+                            {getTranslatedLocation(loc)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <Label>Description</Label>
+                    <Label>{t('leave.description')}</Label>
                     <Textarea
                       id="add-holiday-description"
                       name="description"
@@ -555,7 +577,7 @@ export default function HolidayManagement() {
                   </Button>
                   <Button onClick={handleAddHoliday} className="bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
-                    Add Holiday
+                    {t('leave.addHoliday')}
                   </Button>
                 </div>
               </CardContent>
@@ -571,21 +593,21 @@ export default function HolidayManagement() {
                     // Edit Mode
                     <div className="space-y-4">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-medium text-gray-900">Edit Holiday</h3>
+                        <h3 className="text-xl font-medium text-gray-900">{t('leave.editHoliday')}</h3>
                         <div className="flex gap-2">
                           <Button onClick={() => handleSaveEdit(holiday.id)} size="sm" className="bg-green-600 hover:bg-green-700">
                             <Save className="w-4 h-4 mr-2" />
-                            Save
+                            {t('common.save')}
                           </Button>
                           <Button onClick={handleCancelEdit} variant="outline" size="sm">
                             <X className="w-4 h-4 mr-2" />
-                            Cancel
+                            {t('common.cancel')}
                           </Button>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Holiday Name</Label>
+                          <Label>{t('leave.holidayName')}</Label>
                           <Input
                             id={`edit-holiday-name-${holiday.id}`}
                             name="name"
@@ -594,7 +616,7 @@ export default function HolidayManagement() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Date</Label>
+                          <Label>{t('leave.date')}</Label>
                           <Input
                             id={`edit-holiday-date-${holiday.id}`}
                             name="date"
@@ -604,7 +626,7 @@ export default function HolidayManagement() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Holiday Type</Label>
+                          <Label>{t('leave.holidayType')}</Label>
                           <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
                             <SelectTrigger>
                               <SelectValue />
@@ -619,7 +641,7 @@ export default function HolidayManagement() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Location</Label>
+                          <Label>{t('leave.location')}</Label>
                           <Select value={formData.location} onValueChange={(value) => setFormData({ ...formData, location: value })}>
                             <SelectTrigger>
                               <SelectValue />
@@ -627,14 +649,14 @@ export default function HolidayManagement() {
                             <SelectContent>
                               {LOCATIONS.map((loc) => (
                                 <SelectItem key={loc} value={loc}>
-                                  {loc}
+                                  {getTranslatedLocation(loc)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <Label>Description</Label>
+                          <Label>{t('leave.description')}</Label>
                           <Textarea
                             id={`edit-holiday-desc-${holiday.id}`}
                             name="description"
@@ -651,29 +673,29 @@ export default function HolidayManagement() {
                       <div className="flex items-center gap-6 flex-1">
                         <div className="flex flex-col items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl text-white shadow-lg">
                           <span className="text-2xl font-medium">{new Date(holiday.date).getDate()}</span>
-                          <span className="text-xs uppercase">{new Date(holiday.date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                          <span className="text-xs uppercase">{t(`leave.${new Date(holiday.date).toLocaleString('en-US', { month: 'short' }).toLowerCase()}`)}</span>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h4 className="text-xl font-medium text-gray-900">{holiday.name}</h4>
                             <Badge className={getTypeBadge(holiday.type)}>
-                              {holiday.type}
+                              {getTranslatedType(holiday.type)}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
-                              <p className="text-gray-600">Day</p>
-                              <p className="font-medium text-gray-900">{holiday.day}</p>
+                              <p className="text-gray-600">{t('leave.day')}</p>
+                              <p className="font-medium text-gray-900">{t(`leave.${holiday.day.toLowerCase()}`)}</p>
                             </div>
                             <div>
-                              <p className="text-gray-600">Location</p>
+                              <p className="text-gray-600">{t('leave.location')}</p>
                               <p className="font-medium text-gray-900 flex items-center gap-1">
                                 <MapPin className="w-4 h-4 text-purple-600" />
-                                {holiday.location}
+                                {getTranslatedLocation(holiday.location)}
                               </p>
                             </div>
                             <div>
-                              <p className="text-gray-600">Description</p>
+                              <p className="text-gray-600">{t('leave.description')}</p>
                               <p className="font-medium text-gray-900">{holiday.description}</p>
                             </div>
                           </div>
@@ -682,7 +704,7 @@ export default function HolidayManagement() {
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEditClick(holiday)}>
                           <Edit className="w-4 h-4 mr-2" />
-                          Edit
+                          {t('common.edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -716,7 +738,7 @@ export default function HolidayManagement() {
         <TabsContent value="calendar">
           <Card>
             <CardHeader>
-              <CardTitle>Holiday Calendar 2025</CardTitle>
+              <CardTitle>{t('leave.holidayCalendarYear', { year: '2025' })}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -726,7 +748,7 @@ export default function HolidayManagement() {
                   );
                   if (monthHolidays.length === 0) return null;
 
-                  const monthName = new Date(2025, monthIndex, 1).toLocaleDateString('en-US', { month: 'long' });
+                  const monthName = t(`leave.${new Date(2025, monthIndex, 1).toLocaleString('en-US', { month: 'short' }).toLowerCase()}`);
 
                   return (
                     <div key={monthIndex} className="border rounded-lg p-4">
@@ -740,7 +762,7 @@ export default function HolidayManagement() {
                             <div className="flex items-center gap-4">
                               <div className="flex flex-col items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg text-white">
                                 <span className="text-xl font-medium">{new Date(holiday.date).getDate()}</span>
-                                <span className="text-xs">{holiday.day.slice(0, 3)}</span>
+                                <span className="text-xs">{t(`leave.${holiday.day.slice(0, 3).toLowerCase()}`)}</span>
                               </div>
                               <div>
                                 <p className="font-medium text-gray-900">{holiday.name}</p>
@@ -749,11 +771,11 @@ export default function HolidayManagement() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge className={getTypeBadge(holiday.type)}>
-                                {holiday.type}
+                                {getTranslatedType(holiday.type)}
                               </Badge>
                               <span className="text-sm text-gray-600 flex items-center gap-1">
                                 <MapPin className="w-4 h-4" />
-                                {holiday.location}
+                                {getTranslatedLocation(holiday.location)}
                               </span>
                             </div>
                           </div>

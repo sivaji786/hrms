@@ -69,4 +69,6 @@ export default {
   'common.refresh': 'Refresh',
   'common.filters': 'Filters',
   'common.inactive': 'Inactive',
+  'common.ofTotal': 'of Total',
+  'common.fromLastMonth': 'from last month',
 };

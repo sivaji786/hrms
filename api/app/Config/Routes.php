@@ -54,6 +54,7 @@ $routes->group('api/v1', ['filter' => 'cors'], function ($routes) {
         $routes->get('payroll', 'PayrollController::index');
         $routes->post('payroll/generate', 'PayrollController::generate');
         $routes->get('dashboard/stats', 'DashboardController::getStats');
+        $routes->get('dashboard/employee-stats', 'DashboardController::getEmployeeStats');
         $routes->get('salary-structures', 'SalaryStructureController::index');
         $routes->post('salary-structures', 'SalaryStructureController::create');
         

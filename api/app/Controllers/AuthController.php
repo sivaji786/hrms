@@ -40,7 +40,8 @@ class AuthController extends ApiController
         $payload = [
             'iss' => 'hr-system-api',
             'sub' => $user['id'],
-            'role' => $user['role_id'], // simplified for now
+            'role' => $user['role_id'],
+            'employee_id' => $user['employee_id'],
             'iat' => $iat,
             'exp' => $exp
         ];
@@ -50,14 +51,27 @@ class AuthController extends ApiController
         // Update last login
         $userModel->update($user['id'], ['last_login' => date('Y-m-d H:i:s')]);
 
+        $userData = [
+            'id' => $user['id'],
+            'email' => $user['email'],
+            'username' => $user['username'],
+            'role' => $user['role_id'],
+            'employee_id' => $user['employee_id']
+        ];
+
+        if ($user['employee_id']) {
+            $employeeModel = new \App\Models\EmployeeModel();
+            $employee = $employeeModel->find($user['employee_id']);
+            if ($employee) {
+                $userData['first_name'] = $employee['first_name'];
+                $userData['last_name'] = $employee['last_name'];
+                $userData['full_name'] = $employee['first_name'] . ' ' . $employee['last_name'];
+            }
+        }
+
         return $this->respondSuccess([
             'token' => $token,
-            'user' => [
-                'id' => $user['id'],
-                'email' => $user['email'],
-                'username' => $user['username'],
-                'role' => $user['role_id']
-            ]
+            'user' => $userData
         ], 'Login successful');
     }
 

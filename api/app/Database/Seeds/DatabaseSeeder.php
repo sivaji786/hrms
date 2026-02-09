@@ -418,7 +418,7 @@ class DatabaseSeeder extends Seeder
                  ->delete();
 
         $employees = $this->db->table('employees')
-                              ->select('employees.id, ss.basic_salary, ss.housing_allowance, ss.transport_allowance, ss.other_allowances')
+                              ->select('employees.id, employees.employee_code, ss.basic_salary, ss.housing_allowance, ss.transport_allowance, ss.other_allowances')
                               ->join('salary_structures ss', 'ss.employee_id = employees.id')
                               ->get()->getResultArray();
 
@@ -426,15 +426,36 @@ class DatabaseSeeder extends Seeder
 
         $payrollData = [];
         $periods = [
-            ['month' => 10, 'year' => 2025, 'status' => 'Paid', 'payment_date' => '2025-10-28'],
-            ['month' => 11, 'year' => 2025, 'status' => 'Paid', 'payment_date' => '2025-11-28']
+            ['month' => 10, 'year' => 2025, 'status' => 'Processed', 'payment_date' => '2025-10-28'],
+            ['month' => 11, 'year' => 2025, 'status' => 'Processed', 'payment_date' => '2025-11-28']
         ];
 
-        foreach ($employees as $employee) {
+        // Define varied deduction scenarios for different employees
+        $deductionScenarios = [
+            0 => ['tax' => 0.05, 'insurance' => 500, 'pension' => 0.03, 'loan' => 0],           // 5% tax + insurance + 3% pension
+            1 => ['tax' => 0.07, 'insurance' => 750, 'pension' => 0.05, 'loan' => 1000],        // 7% tax + insurance + 5% pension + loan
+            2 => ['tax' => 0.04, 'insurance' => 600, 'pension' => 0.02, 'loan' => 500],         // 4% tax + insurance + 2% pension + small loan
+            3 => ['tax' => 0.06, 'insurance' => 800, 'pension' => 0.04, 'loan' => 0],           // 6% tax + insurance + 4% pension
+            4 => ['tax' => 0.08, 'insurance' => 900, 'pension' => 0.05, 'loan' => 1500],        // 8% tax + insurance + 5% pension + large loan
+            5 => ['tax' => 0.03, 'insurance' => 400, 'pension' => 0.02, 'loan' => 0],           // 3% tax + insurance + 2% pension (minimal)
+        ];
+
+        foreach ($employees as $index => $employee) {
             $basic = $employee['basic_salary'];
             $allowances = $employee['housing_allowance'] + $employee['transport_allowance'] + $employee['other_allowances'];
             $gross = $basic + $allowances;
-            $net = $gross; 
+            
+            // Get deduction scenario (cycle through scenarios if more employees than scenarios)
+            $scenario = $deductionScenarios[$index % count($deductionScenarios)];
+            
+            // Calculate deductions
+            $taxDeduction = $gross * $scenario['tax'];
+            $insuranceDeduction = $scenario['insurance'];
+            $pensionDeduction = $gross * $scenario['pension'];
+            $loanDeduction = $scenario['loan'];
+            
+            $totalDeductions = $taxDeduction + $insuranceDeduction + $pensionDeduction + $loanDeduction;
+            $net = $gross - $totalDeductions;
 
             foreach ($periods as $period) {
                 $payrollData[] = [
@@ -444,7 +465,7 @@ class DatabaseSeeder extends Seeder
                     'year' => $period['year'],
                     'basic_salary' => $basic,
                     'total_allowances' => $allowances,
-                    'total_deductions' => 0,
+                    'total_deductions' => $totalDeductions,
                     'net_salary' => $net,
                     'status' => $period['status'],
                     'payment_date' => $period['payment_date'],

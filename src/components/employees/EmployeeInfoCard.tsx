@@ -4,6 +4,7 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Edit, Clock, UserMinus, User } from 'lucide-react';
 import { CurrencyIcon } from '../common';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface EmployeeInfoCardProps {
   employee: {
@@ -31,6 +32,8 @@ export default function EmployeeInfoCard({
   onViewPayroll,
   onOffboard,
 }: EmployeeInfoCardProps) {
+  const { t } = useLanguage();
+
   return (
     <Card className="border-t-4 border-t-blue-600">
       <CardContent className="p-6">
@@ -72,7 +75,7 @@ export default function EmployeeInfoCard({
                 className={currentView === 'profile' ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : ''}
               >
                 <User className="w-4 h-4 mr-2" />
-                View Profile
+                {t('employee.viewProfile')}
               </Button>
             )}
             <Button
@@ -81,7 +84,7 @@ export default function EmployeeInfoCard({
               className={currentView === 'edit' ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : ''}
             >
               <Edit className="w-4 h-4 mr-2" />
-              Edit Profile
+              {t('employee.editProfile')}
             </Button>
             <Button
               onClick={() => onViewAttendance(employee.id)}
@@ -89,7 +92,7 @@ export default function EmployeeInfoCard({
               className={currentView === 'attendance' ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : ''}
             >
               <Clock className="w-4 h-4 mr-2" />
-              Attendance
+              {t('employee.attendance')}
             </Button>
             <Button
               onClick={() => onViewPayroll(employee.id)}
@@ -97,7 +100,7 @@ export default function EmployeeInfoCard({
               className={currentView === 'payroll' ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : ''}
             >
               <CurrencyIcon className="w-4 h-4 mr-2" />
-              Payroll
+              {t('employee.payroll')}
             </Button>
             <Button
               onClick={() => onOffboard(employee.id)}
@@ -105,7 +108,7 @@ export default function EmployeeInfoCard({
               className={currentView === 'offboard' ? 'bg-orange-100 text-orange-700' : 'text-orange-600 hover:bg-orange-50'}
             >
               <UserMinus className="w-4 h-4 mr-2" />
-              Offboard
+              {t('employee.offboard')}
             </Button>
           </div>
         </div>

@@ -58,24 +58,57 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   // Calculate unread notifications count
   const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
 
-  const menuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
-    { id: 'holidays', icon: CalendarDays, label: t('nav.holidays') },
-    { id: 'employees', icon: Users, label: t('nav.employees') },
-    { id: 'attendance', icon: Clock, label: t('nav.attendance') },
-    { id: 'payroll', icon: DollarSign, label: t('nav.payroll') },
-    { id: 'performance', icon: TrendingUp, label: t('nav.performance') },
-    { id: 'training', icon: GraduationCap, label: t('nav.training') },
-    { id: 'assets', icon: Package, label: t('nav.assets') },
-    { id: 'expense', icon: Plane, label: t('nav.expense') },
-    { id: 'shifts', icon: Clock, label: t('nav.shifts') },
-    { id: 'leave', icon: Calendar, label: t('nav.leave') },
-    { id: 'recruitment', icon: UserPlus, label: t('nav.recruitment') },
-    { id: 'tickets', icon: Ticket, label: t('nav.tickets') },
-    { id: 'documents', icon: FileText, label: t('nav.documents') },
-    { id: 'reports', icon: FileText, label: t('nav.reports') },
-    { id: 'admin', icon: Settings, label: t('nav.admin') },
+  const menuGroups = [
+    {
+      title: t('nav.group.core'),
+      items: [
+        { id: 'dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
+        { id: 'holidays', icon: CalendarDays, label: t('nav.holidays') },
+      ]
+    },
+    {
+      title: t('nav.group.employeeManagement'),
+      items: [
+        { id: 'employees', icon: Users, label: t('nav.employees') },
+        { id: 'recruitment', icon: UserPlus, label: t('nav.recruitment') },
+      ]
+    },
+    {
+      title: t('nav.group.timeAttendance'),
+      items: [
+        { id: 'attendance', icon: Clock, label: t('nav.attendance') },
+        { id: 'shifts', icon: Clock, label: t('nav.shifts') },
+        { id: 'leave', icon: Calendar, label: t('nav.leave') },
+      ]
+    },
+    {
+      title: t('nav.group.financial'),
+      items: [
+        { id: 'payroll', icon: DollarSign, label: t('nav.payroll') },
+        { id: 'expense', icon: Plane, label: t('nav.expense') },
+      ]
+    },
+    {
+      title: t('nav.group.developmentSupport'),
+      items: [
+        { id: 'performance', icon: TrendingUp, label: t('nav.performance') },
+        { id: 'training', icon: GraduationCap, label: t('nav.training') },
+        { id: 'assets', icon: Package, label: t('nav.assets') },
+        { id: 'tickets', icon: Ticket, label: t('nav.tickets') },
+      ]
+    },
+    {
+      title: t('nav.group.system'),
+      items: [
+        { id: 'documents', icon: FileText, label: t('nav.documents') },
+        { id: 'reports', icon: FileText, label: t('nav.reports') },
+        { id: 'admin', icon: Settings, label: t('nav.admin') },
+      ]
+    },
   ];
+
+  // Flatten for backward compatibility with getPageTitle
+  const menuItems = menuGroups.flatMap(group => group.items);
 
   const getPageTitle = () => {
     if (activeModule === 'add-employee') {
@@ -121,7 +154,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     // Main module views
     switch (activeModule) {
       case 'dashboard':
-        return <DashboardHome />;
+        return <DashboardHome onNavigate={(id) => setActiveModule(id)} />;
       case 'employees':
         return <EmployeeManagement onAddEmployee={() => setActiveModule('add-employee')} />;
       case 'attendance':
@@ -135,7 +168,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       case 'assets':
         return <AssetManagement />;
       case 'expense':
-        return <ExpenseTravelManagement onSubmitExpense={() => { }} onRequestTravel={() => { }} />;
+        return <ExpenseTravelManagement />;
       case 'shifts':
         return <ShiftManagement />;
       case 'leave':
@@ -176,26 +209,36 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           </div>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveModule(item.id);
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeModule === item.id
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-gray-700/50'
-                }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-sm">{item.label}</span>
-            </button>
-          );
-        })}
+      <nav className="flex-1 p-3 space-y-2">
+        {menuGroups.map((group, groupIndex) => (
+          <div key={group.title}>
+            {groupIndex > 0 && <div className="border-t border-gray-700 my-2"></div>}
+            <div className="px-3 py-1.5">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                {group.title}
+              </h3>
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveModule(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center px-3 py-2 rounded-lg transition-all text-sm ${activeModule === item.id
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                      : 'hover:bg-gray-700/50'
+                      }`}
+                  >
+                    <span className="text-sm truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
       <div className="p-4 border-t border-gray-700">
         <Button

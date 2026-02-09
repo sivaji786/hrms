@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Users, Clock, Calendar, TrendingUp, ArrowUpRight, MapPin, UserPlus, CheckCircle, UserX, Award, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { StatCard, CurrencyIcon } from './common';
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { dashboardService } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -50,7 +50,11 @@ const iconMap: any = {
   CheckCircle
 };
 
-export default function DashboardHome() {
+interface DashboardHomeProps {
+  onNavigate?: (moduleId: string) => void;
+}
+
+export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
   const [selectedLocation, setSelectedLocation] = useState('All Locations');
   const { t } = useLanguage();
   const { formatCurrency, convertAmount } = useCurrency();
@@ -63,6 +67,9 @@ export default function DashboardHome() {
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Use the loading state (even if just for the future) or remove it
+  // Removing it since it's currently flagged as unused and we handle fetchData async
 
   useEffect(() => {
     fetchData();
@@ -89,11 +96,19 @@ export default function DashboardHome() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   const statsCards = [
-    { title: t('dashboard.totalEmployees'), value: stats.totalEmployees.toLocaleString(), change: '+12%', icon: Users, color: 'from-blue-500 to-blue-600' },
-    { title: t('dashboard.presentToday'), value: stats.presentToday.toLocaleString(), change: `${stats.presentPercentage}%`, icon: Clock, color: 'from-green-500 to-green-600' },
-    { title: t('dashboard.onLeave'), value: stats.onLeave.toString(), change: `${stats.leavePercentage}%`, icon: Calendar, color: 'from-orange-500 to-orange-600' },
-    { title: t('dashboard.monthlyPayroll'), value: formatCurrency(convertAmount(stats.monthlyPayroll), { compact: true, decimals: 1 }), change: '+5%', icon: CurrencyIcon, color: 'from-purple-500 to-purple-600' },
+    { title: t('dashboard.totalEmployees'), value: stats.totalEmployees.toLocaleString(), change: '+12%', icon: Users, color: 'from-blue-500 to-blue-600', moduleId: 'employees' },
+    { title: t('dashboard.presentToday'), value: stats.presentToday.toLocaleString(), change: `${stats.presentPercentage}%`, icon: Clock, color: 'from-green-500 to-green-600', moduleId: 'attendance' },
+    { title: t('dashboard.onLeave'), value: stats.onLeave.toString(), change: `${stats.leavePercentage}%`, icon: Calendar, color: 'from-orange-500 to-orange-600', moduleId: 'leave' },
+    { title: t('dashboard.monthlyPayroll'), value: formatCurrency(convertAmount(stats.monthlyPayroll), { compact: true, decimals: 1 }), change: '+5%', icon: CurrencyIcon, color: 'from-purple-500 to-purple-600', moduleId: 'payroll' },
   ];
 
   return (
@@ -145,6 +160,7 @@ export default function DashboardHome() {
               iconColor={`text-${stat.color.split('-')[1]}-600`}
               trend={stat.change}
               variant="default"
+              onClick={() => onNavigate?.(stat.moduleId)}
             />
           );
         })}

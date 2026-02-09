@@ -68,4 +68,6 @@ export default {
   'common.refresh': 'تحديث',
   'common.filters': 'الفلاتر',
   'common.inactive': 'غير نشط',
+  'common.ofTotal': 'من الإجمالي',
+  'common.fromLastMonth': 'من الشهر الماضي',
 };

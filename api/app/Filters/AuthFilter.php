@@ -52,7 +52,8 @@ class AuthFilter implements FilterInterface
 
             \App\Controllers\ApiController::$currentUser = (object) [
                 'id' => $decoded->sub,
-                'role' => $decoded->role
+                'role' => $decoded->role,
+                'employee_id' => $decoded->employee_id ?? null
             ];
         } catch (\Exception $e) {
             $this->logSecurityEvent('AUTH_INVALID_TOKEN', 'Invalid token: ' . $e->getMessage(), ['ip' => $request->getIPAddress()]);

@@ -16,6 +16,7 @@ interface StatCardProps {
   };
   trendColor?: string;
   variant?: 'default' | 'gradient';
+  onClick?: () => void;
 }
 
 /**
@@ -34,6 +35,7 @@ export default function StatCard({
   trend,
   trendColor = 'text-gray-500',
   variant = 'default',
+  onClick,
 }: StatCardProps) {
   // Helper function to render trend
   const renderTrend = () => {
@@ -56,7 +58,10 @@ export default function StatCard({
   if (variant === 'default') {
     // Simple payroll style
     return (
-      <Card className="hover:shadow-lg transition-shadow">
+      <Card
+        className={`hover:shadow-lg transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
+        onClick={onClick}
+      >
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -78,7 +83,10 @@ export default function StatCard({
 
   // Gradient attendance style with colored side panel
   return (
-    <Card className={`overflow-hidden hover:shadow-lg transition-shadow border-t-4 ${borderColor}`}>
+    <Card
+      className={`overflow-hidden hover:shadow-lg transition-shadow border-t-4 ${borderColor} ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <CardContent className="p-0">
         <div className="flex items-center">
           <div className="flex-1 p-6">

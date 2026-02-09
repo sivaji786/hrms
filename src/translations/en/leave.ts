@@ -79,6 +79,7 @@ export default {
   'leave.leaveRequests': 'Leave Requests',
   'leave.leaveRequestsTitle': 'Leave Requests',
   'leave.showingRequests': 'Showing {{current}} of {{total}} requests',
+  'leave.noRequests': 'No leave requests found',
 
   // Tabs
   'leave.leaveRequestsTab': 'Leave Requests',
@@ -119,7 +120,12 @@ export default {
   'leave.holidayName': 'HOLIDAY NAME',
   'leave.date': 'DATE',
   'leave.day': 'DAY',
+  'leave.location': 'LOCATION',
+  'leave.description': 'DESCRIPTION',
   'leave.addHoliday': 'Add Holiday',
+  'leave.addNewHoliday': 'Add New Holiday',
+  'leave.editHoliday': 'Edit Holiday',
+  'leave.holidayCalendarYear': 'Holiday Calendar {{year}}',
 
   // Holiday Types
   'leave.nationalHoliday': 'National Holiday',
@@ -142,6 +148,31 @@ export default {
   'leave.oct': 'Oct',
   'leave.nov': 'Nov',
   'leave.dec': 'Dec',
+
+  // Locations
+  'leave.dubai': 'Dubai',
+  'leave.abuDhabi': 'Abu Dhabi',
+  'leave.sharjah': 'Sharjah',
+  'leave.ajman': 'Ajman',
+  'leave.rasAlKhaimah': 'Ras Al Khaimah',
+  'leave.fujairah': 'Fujairah',
+  'leave.ummAlQuwain': 'Umm Al Quwain',
+
+  // Weekdays
+  'leave.monday': 'Monday',
+  'leave.tuesday': 'Tuesday',
+  'leave.wednesday': 'Wednesday',
+  'leave.thursday': 'Thursday',
+  'leave.friday': 'Friday',
+  'leave.saturday': 'Saturday',
+  'leave.sunday': 'Sunday',
+  'leave.mon': 'Mon',
+  'leave.tue': 'Tue',
+  'leave.wed': 'Wed',
+  'leave.thu': 'Thu',
+  'leave.fri': 'Fri',
+  'leave.sat': 'Sat',
+  'leave.sun': 'Sun',
 
   // Leave Policies
   'leave.leavePolicies': 'Leave Policies',

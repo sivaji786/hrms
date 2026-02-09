@@ -8,7 +8,7 @@ use App\Models\AttendanceModel;
 use App\Models\LeaveModel;
 use App\Models\PayrollModel;
 
-class DashboardController extends ResourceController
+class DashboardController extends ApiController
 {
     public function getStats()
     {
@@ -31,78 +31,64 @@ class DashboardController extends ResourceController
         }
         
         $totalEmployees = count($employees);
+        $employeeIds = array_column($employees, 'id');
         
-        // Present Today (Mock logic or real if possible)
-        // For now, let's just count check-ins for today
+        // Present Today
         $today = date('Y-m-d');
-        // Note: This attendance count is global, not filtered by location for simplicity in this iteration
-        // To filter by location, we'd need to join with employees table
-        $attendance = $attendanceModel->where('date', $today)->findAll();
-        $presentToday = count($attendance); 
-        
-        // On Leave Today - Filter by location if specified
-        if ($location && $location !== 'All Locations') {
-            // Get employee IDs for the selected location
-            $employeeIds = array_column($employees, 'id');
-            
-            if (empty($employeeIds)) {
-                $onLeave = 0;
-            } else {
-                $leaves = $leaveModel->where('start_date <=', $today)
-                                    ->where('end_date >=', $today)
-                                    ->where('status', 'Approved')
-                                    ->whereIn('employee_id', $employeeIds)
-                                    ->findAll();
-                $onLeave = count($leaves);
-            }
+        if (!empty($employeeIds)) {
+            $attendanceCount = $attendanceModel->where('date', $today)
+                                              ->whereIn('employee_id', $employeeIds)
+                                              ->whereIn('status', ['Present', 'Late', 'Half Day'])
+                                              ->countAllResults();
+            $presentToday = $attendanceCount;
         } else {
-            // All locations - no filter needed
-            $leaves = $leaveModel->where('start_date <=', $today)
-                                ->where('end_date >=', $today)
-                                ->where('status', 'Approved')
-                                ->findAll();
-            $onLeave = count($leaves);
+            $presentToday = 0;
+        }
+        
+        // On Leave Today
+        if (!empty($employeeIds)) {
+            $onLeave = $leaveModel->where('start_date <=', $today)
+                                 ->where('end_date >=', $today)
+                                 ->where('status', 'Approved')
+                                 ->whereIn('employee_id', $employeeIds)
+                                 ->countAllResults();
+        } else {
+            $onLeave = 0;
         }
 
-        // Monthly Payroll - Get actual sum from payroll_records for current month
-        $payrollModel = new PayrollModel();
-        $currentMonth = date('n'); // 1-12
+        // Monthly Payroll
+        $currentMonth = date('n');
         $currentYear = date('Y');
         
-        $payrollRecords = $payrollModel->where('month', $currentMonth)
-                                       ->where('year', $currentYear)
-                                       ->findAll();
+        $payrollQuery = $payrollModel->where('month', $currentMonth)
+                                     ->where('year', $currentYear);
+        
+        if (!empty($employeeIds)) {
+            $payrollQuery->whereIn('employee_id', $employeeIds);
+        } else if ($location && $location !== 'All Locations') {
+            // No employees in this location
+            $payrollQuery->where('employee_id', 'none');
+        }
+        
+        $payrollRecords = $payrollQuery->findAll();
         
         $monthlyPayroll = 0;
         foreach ($payrollRecords as $record) {
             $monthlyPayroll += $record['net_salary'] ?? 0;
         }
-        
-        // If no payroll data for current month, use a reasonable estimate
-        if ($monthlyPayroll == 0 && $totalEmployees > 0) {
-            $monthlyPayroll = $totalEmployees * 10000; // Fallback estimate
-        }
 
         // Location Counts
         $allLocations = $locationModel->findAll();
         $locationCounts = [];
-        
-        // Initialize all locations with 0
         foreach ($allLocations as $loc) {
             $locationCounts[$loc['name']] = 0;
         }
-        
-        // Count employees per location
         foreach ($allEmployees as $emp) {
             $loc = $emp['location'] ?? 'Unknown';
-            if (!isset($locationCounts[$loc])) {
-                // If location is not in DB but exists in employee record (e.g. Unknown or old data)
-                $locationCounts[$loc] = 0;
+            if (isset($locationCounts[$loc])) {
+                $locationCounts[$loc]++;
             }
-            $locationCounts[$loc]++;
         }
-        
-        // Add All Locations count
         $locationCounts['All Locations'] = count($allEmployees);
 
         // Department Distribution
@@ -125,7 +111,7 @@ class DashboardController extends ResourceController
             $i++;
         }
 
-        return $this->respond([
+        return $this->respondSuccess([
             'stats' => [
                 'totalEmployees' => $totalEmployees,
                 'presentToday' => $presentToday,
@@ -136,14 +122,14 @@ class DashboardController extends ResourceController
             ],
             'locationCounts' => $locationCounts,
             'departmentData' => $departmentData,
-            'attendanceData' => $this->getAttendanceData($totalEmployees),
-            'leaveData' => $this->getLeaveData(),
-            'recentActivities' => $this->getRecentActivities(),
-            'upcomingEvents' => $this->getUpcomingEvents()
+            'attendanceData' => $this->getAttendanceData($totalEmployees, $employeeIds),
+            'leaveData' => $this->getLeaveData($employeeIds),
+            'recentActivities' => $this->getRecentActivities($employeeIds),
+            'upcomingEvents' => $this->getUpcomingEvents($employeeIds)
         ]);
     }
 
-    private function getAttendanceData($totalEmployees)
+    private function getAttendanceData($totalEmployees, $employeeIds = [])
     {
         $attendanceModel = new AttendanceModel();
         $weeklyData = [];
@@ -169,7 +155,11 @@ class DashboardController extends ResourceController
             $dateStr = $date->format('Y-m-d');
             
             // Get attendance for this day
-            $attendance = $attendanceModel->where('date', $dateStr)->findAll();
+            $query = $attendanceModel->where('date', $dateStr);
+            if (!empty($employeeIds)) {
+                $query->whereIn('employee_id', $employeeIds);
+            }
+            $attendance = $query->findAll();
             
             $present = 0;
             $absent = 0;
@@ -189,21 +179,10 @@ class DashboardController extends ResourceController
             ];
         }
         
-        // If no data, return reasonable estimates
-        if (array_sum(array_column($weeklyData, 'present')) == 0 && $totalEmployees > 0) {
-            return [
-                ['name' => 'Mon', 'present' => floor($totalEmployees * 0.945), 'absent' => floor($totalEmployees * 0.055)],
-                ['name' => 'Tue', 'present' => floor($totalEmployees * 0.933), 'absent' => floor($totalEmployees * 0.067)],
-                ['name' => 'Wed', 'present' => floor($totalEmployees * 0.953), 'absent' => floor($totalEmployees * 0.047)],
-                ['name' => 'Thu', 'present' => floor($totalEmployees * 0.937), 'absent' => floor($totalEmployees * 0.063)],
-                ['name' => 'Fri', 'present' => floor($totalEmployees * 0.926), 'absent' => floor($totalEmployees * 0.074)],
-            ];
-        }
-        
         return $weeklyData;
     }
 
-    private function getLeaveData()
+    private function getLeaveData($employeeIds = [])
     {
         $leaveModel = new LeaveModel();
         $leaveData = [];
@@ -225,10 +204,15 @@ class DashboardController extends ResourceController
             $monthName = $months[$monthNum - 1];
             
             // Get leave counts for this month
-            $leaves = $leaveModel->where('MONTH(start_date)', $monthNum)
+            $query = $leaveModel->where('MONTH(start_date)', $monthNum)
                                  ->where('YEAR(start_date)', $year)
-                                 ->where('status', 'Approved')
-                                 ->findAll();
+                                 ->where('status', 'Approved');
+            
+            if (!empty($employeeIds)) {
+                $query->whereIn('employee_id', $employeeIds);
+            }
+            
+            $leaves = $query->findAll();
             
             $casual = 0;
             $sick = 0;
@@ -253,35 +237,25 @@ class DashboardController extends ResourceController
             ];
         }
         
-        // If no data, return reasonable mock data
-        if (array_sum(array_column($leaveData, 'casual')) == 0) {
-            return [
-                ['month' => 'Jan', 'casual' => 12, 'sick' => 8, 'privilege' => 5],
-                ['month' => 'Feb', 'casual' => 10, 'sick' => 9, 'privilege' => 4],
-                ['month' => 'Mar', 'casual' => 15, 'sick' => 7, 'privilege' => 6],
-                ['month' => 'Apr', 'casual' => 14, 'sick' => 10, 'privilege' => 5],
-                ['month' => 'May', 'casual' => 16, 'sick' => 8, 'privilege' => 7],
-                ['month' => 'Jun', 'casual' => 13, 'sick' => 9, 'privilege' => 6],
-            ];
-        }
-        
         return $leaveData;
     }
 
-    private function getRecentActivities()
+    private function getRecentActivities($employeeIds = [])
     {
         $activities = [];
         $employeeModel = new EmployeeModel();
         $leaveModel = new LeaveModel();
         $attendanceModel = new AttendanceModel();
-        $reviewModel = new \App\Models\PerformanceReviewModel();
 
         // New Hires
-        $newHires = $employeeModel->select('employees.*, departments.name as department_name')
-            ->join('departments', 'departments.id = employees.department_id', 'left')
-            ->orderBy('created_at', 'DESC')
-            ->limit(5)
-            ->find();
+        $hireQuery = $employeeModel->select('employees.*, departments.name as department_name')
+            ->join('departments', 'departments.id = employees.department_id', 'left');
+        
+        if (!empty($employeeIds)) {
+            $hireQuery->whereIn('employees.id', $employeeIds);
+        }
+        
+        $newHires = $hireQuery->orderBy('created_at', 'DESC')->limit(5)->find();
 
         foreach ($newHires as $hire) {
             $activities[] = [
@@ -296,13 +270,16 @@ class DashboardController extends ResourceController
         }
 
         // Approved Leaves
-        $leaves = $leaveModel->select('leave_requests.*, employees.first_name, employees.last_name, departments.name as department_name')
+        $leaveQuery = $leaveModel->select('leave_requests.*, employees.first_name, employees.last_name, departments.name as department_name')
             ->join('employees', 'employees.id = leave_requests.employee_id')
             ->join('departments', 'departments.id = employees.department_id', 'left')
-            ->where('leave_requests.status', 'Approved')
-            ->orderBy('approval_date', 'DESC')
-            ->limit(5)
-            ->find();
+            ->where('leave_requests.status', 'Approved');
+        
+        if (!empty($employeeIds)) {
+            $leaveQuery->whereIn('leave_requests.employee_id', $employeeIds);
+        }
+        
+        $leaves = $leaveQuery->orderBy('approval_date', 'DESC')->limit(5)->find();
 
         foreach ($leaves as $leave) {
             $activities[] = [
@@ -317,13 +294,16 @@ class DashboardController extends ResourceController
         }
 
         // Late Arrivals
-        $attendance = $attendanceModel->select('attendance_records.*, employees.first_name, employees.last_name, departments.name as department_name')
+        $attQuery = $attendanceModel->select('attendance_records.*, employees.first_name, employees.last_name, departments.name as department_name')
             ->join('employees', 'employees.id = attendance_records.employee_id')
             ->join('departments', 'departments.id = employees.department_id', 'left')
-            ->where('attendance_records.status', 'Late')
-            ->orderBy('created_at', 'DESC')
-            ->limit(5)
-            ->find();
+            ->where('attendance_records.status', 'Late');
+        
+        if (!empty($employeeIds)) {
+            $attQuery->whereIn('attendance_records.employee_id', $employeeIds);
+        }
+        
+        $attendance = $attQuery->orderBy('created_at', 'DESC')->limit(5)->find();
 
         foreach ($attendance as $att) {
             $activities[] = [
@@ -338,12 +318,15 @@ class DashboardController extends ResourceController
         }
         
         // Exits (Resigned)
-        $exits = $employeeModel->select('employees.*, departments.name as department_name')
+        $exitQuery = $employeeModel->select('employees.*, departments.name as department_name')
             ->join('departments', 'departments.id = employees.department_id', 'left')
-            ->where('status', 'Resigned')
-            ->orderBy('updated_at', 'DESC')
-            ->limit(5)
-            ->find();
+            ->where('status', 'Resigned');
+        
+        if (!empty($employeeIds)) {
+            $exitQuery->whereIn('employees.id', $employeeIds);
+        }
+            
+        $exits = $exitQuery->orderBy('updated_at', 'DESC')->limit(5)->find();
             
         foreach ($exits as $exit) {
              $activities[] = [
@@ -365,7 +348,7 @@ class DashboardController extends ResourceController
         return array_slice($activities, 0, 5);
     }
 
-    private function getUpcomingEvents()
+    private function getUpcomingEvents($employeeIds = [])
     {
         $events = [];
         $trainingModel = new \App\Models\TrainingProgramModel();
@@ -406,14 +389,16 @@ class DashboardController extends ResourceController
         }
         
         // Onboarding
-        $newJoiners = $employeeModel->where('date_of_joining >=', date('Y-m-d'))
-            ->orderBy('date_of_joining', 'ASC')
-            ->limit(5)
-            ->find();
+        $onboardQuery = $employeeModel->where('date_of_joining >=', date('Y-m-d'));
+        if (!empty($employeeIds)) {
+            $onboardQuery->whereIn('id', $employeeIds);
+        }
+            
+        $newJoiners = $onboardQuery->orderBy('date_of_joining', 'ASC')->limit(5)->find();
             
         foreach ($newJoiners as $joiner) {
             $events[] = [
-                'title' => 'New Batch Onboarding',
+                'title' => 'New Joiner Onboarding',
                 'date' => date('M j, Y', strtotime($joiner['date_of_joining'])),
                 'timestamp' => strtotime($joiner['date_of_joining']),
                 'type' => 'Onboarding'
@@ -426,6 +411,130 @@ class DashboardController extends ResourceController
         });
 
         return array_slice($events, 0, 5);
+    }
+
+    public function getEmployeeStats()
+    {
+        $user = self::$currentUser;
+        if (!$user) {
+            return $this->failUnauthorized();
+        }
+
+        $employeeId = $user->employee_id ?? null;
+        if (!$employeeId) {
+            // Check if user has an employee record
+            $userModel = new \App\Models\UserModel();
+            $userData = $userModel->find($user->id);
+            $employeeId = $userData['employee_id'] ?? null;
+        }
+
+        if (!$employeeId) {
+            return $this->respond([
+                'employee' => [
+                    'firstName' => $user->username ?? 'User',
+                    'lastName' => '',
+                    'code' => ''
+                ],
+                'leave' => ['total' => 0, 'pending' => 0],
+                'attendance' => ['rate' => 0],
+                'payroll' => ['net' => 0],
+                'recentActivities' => [],
+                'upcomingEvents' => []
+            ]);
+        }
+        
+        $leaveModel = new \App\Models\LeaveModel();
+        $attendanceModel = new \App\Models\AttendanceModel();
+        $payrollModel = new \App\Models\PayrollModel();
+        $employeeModel = new \App\Models\EmployeeModel();
+
+        $employee = $employeeModel->find($employeeId);
+
+        // Leave Balance
+        $leaveBalance = $leaveModel->where('employee_id', $employeeId)
+                                  ->where('status', 'Approved')
+                                  ->countAllResults();
+        
+        $totalEntitlement = 24; 
+        $remainingLeave = $totalEntitlement - $leaveBalance;
+
+        // Attendance Rate for current month
+        $month = date('n');
+        $year = date('Y');
+        
+        $presentDays = $attendanceModel->where('employee_id', $employeeId)
+                                      ->where('MONTH(date)', $month)
+                                      ->where('YEAR(date)', $year)
+                                      ->whereIn('status', ['Present', 'Late', 'Half Day'])
+                                      ->countAllResults();
+        
+        $daysInMonth = date('t');
+        $attendanceRate = $daysInMonth > 0 ? round(($presentDays / $daysInMonth) * 100) : 0;
+
+        // Last Salary
+        $lastPayroll = $payrollModel->where('employee_id', $employeeId)
+                                    ->orderBy('year', 'DESC')
+                                    ->orderBy('month', 'DESC')
+                                    ->first();
+        $netSalary = $lastPayroll['net_salary'] ?? 0;
+
+        // Recent Activities for this employee
+        $activities = [];
+        
+        // Recent Leaves
+        $recentLeaves = $leaveModel->where('employee_id', $employeeId)
+                                  ->orderBy('created_at', 'DESC')
+                                  ->limit(3)
+                                  ->findAll();
+        foreach ($recentLeaves as $leave) {
+            $activities[] = [
+                'id' => 'leave_' . $leave['id'],
+                'action' => 'Leave Request ' . $leave['status'],
+                'description' => 'Your leave request for ' . date('M j', strtotime($leave['start_date'])) . ' has been ' . strtolower($leave['status']),
+                'time' => $this->timeAgo($leave['updated_at'] ?? $leave['created_at']),
+                'icon' => 'Calendar',
+                'timestamp' => strtotime($leave['updated_at'] ?? $leave['created_at'])
+            ];
+        }
+
+        // Recent Payslips
+        if ($lastPayroll) {
+            $activities[] = [
+                'id' => 'payroll_' . $lastPayroll['id'],
+                'action' => 'Payslip Generated',
+                'description' => date('F Y', mktime(0, 0, 0, $lastPayroll['month'], 10)) . ' payslip is now available',
+                'time' => $this->timeAgo($lastPayroll['created_at']),
+                'icon' => 'DollarSign',
+                'timestamp' => strtotime($lastPayroll['created_at'])
+            ];
+        }
+
+        // Sort activities
+        usort($activities, function($a, $b) {
+            return $b['timestamp'] - $a['timestamp'];
+        });
+
+        $employee = $employeeModel->find($employeeId);
+
+        return $this->respondSuccess([
+            'employee' => [
+                'firstName' => $employee['first_name'] ?? '',
+                'lastName' => $employee['last_name'] ?? '',
+                'code' => $employee['employee_code'] ?? ''
+            ],
+            'leave' => [
+                'total' => $remainingLeave,
+                'pending' => $leaveModel->where('employee_id', $employeeId)->where('status', 'Pending')->countAllResults()
+            ],
+            'attendance' => [
+                'rate' => $attendanceRate
+            ],
+            'payroll' => [
+                'net' => $netSalary
+            ],
+            'recentActivities' => array_slice($activities, 0, 5),
+            'upcomingEvents' => $this->getUpcomingEvents()
+        ]);
     }
 
     private function timeAgo($datetime)

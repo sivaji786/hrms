@@ -79,6 +79,7 @@ export default {
   'leave.leaveRequests': 'طلبات الإجازة',
   'leave.leaveRequestsTitle': 'طلبات الإجازة',
   'leave.showingRequests': 'عرض {{current}} من {{total}} طلب',
+  'leave.noRequests': 'لا توجد طلبات إجازة',
 
   // Tabs
   'leave.leaveRequestsTab': 'طلبات الإجازة',
@@ -119,7 +120,12 @@ export default {
   'leave.holidayName': 'اسم العطلة',
   'leave.date': 'التاريخ',
   'leave.day': 'اليوم',
+  'leave.location': 'الموقع',
+  'leave.description': 'الوصف',
   'leave.addHoliday': 'إضافة عطلة',
+  'leave.addNewHoliday': 'إضافة عطلة جديدة',
+  'leave.editHoliday': 'تعديل العطلة',
+  'leave.holidayCalendarYear': 'تقويم العطلات {{year}}',
 
   // Holiday Types
   'leave.nationalHoliday': 'عطلة وطنية',
@@ -142,6 +148,31 @@ export default {
   'leave.oct': 'أكتوبر',
   'leave.nov': 'نوفمبر',
   'leave.dec': 'ديسمبر',
+
+  // Locations
+  'leave.dubai': 'دبي',
+  'leave.abuDhabi': 'أبو ظبي',
+  'leave.sharjah': 'الشارقة',
+  'leave.ajman': 'عجمان',
+  'leave.rasAlKhaimah': 'رأس الخيمة',
+  'leave.fujairah': 'الفجيرة',
+  'leave.ummAlQuwain': 'أم القيوين',
+
+  // Weekdays
+  'leave.monday': 'الاثنين',
+  'leave.tuesday': 'الثلاثاء',
+  'leave.wednesday': 'الأربعاء',
+  'leave.thursday': 'الخميس',
+  'leave.friday': 'الجمعة',
+  'leave.saturday': 'السبت',
+  'leave.sunday': 'الأحد',
+  'leave.mon': 'اثنين',
+  'leave.tue': 'ثلاثاء',
+  'leave.wed': 'أربعاء',
+  'leave.thu': 'خميس',
+  'leave.fri': 'جمعة',
+  'leave.sat': 'سبت',
+  'leave.sun': 'أحد',
 
   // Leave Policies
   'leave.leavePolicies': 'سياسات الإجازات',
